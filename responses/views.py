@@ -19,7 +19,6 @@ class ResponseListCreateView(generics.ListCreateAPIView):
 
         # Load the OpenAI API key securely
         api_key = os.getenv("OPENAI_API_KEY")
-        print(api_key)
         if not api_key:
             return APIResponse({"error": "Missing OpenAI API key."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
