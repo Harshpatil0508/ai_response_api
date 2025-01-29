@@ -1,6 +1,6 @@
 import openai
 import time
-import os
+from django.conf import settings
 from rest_framework import generics, status
 from rest_framework.response import Response as APIResponse
 from .models import Response
@@ -17,21 +17,23 @@ class ResponseListCreateView(generics.ListCreateAPIView):
         if not prompt:
             return APIResponse({"error": "Prompt is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Load the OpenAI API key securely
-        api_key = os.getenv("OPENAI_API_KEY")
+        # Get OpenAI API key from Django settings
+   # Get OpenAI API key from Django settings
+        api_key = settings.OPENAI_API_KEY  # Store your API key in settings.py
+
         if not api_key:
             return APIResponse({"error": "Missing OpenAI API key."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
         try:
             start_time = time.time()
-            openai.api_key = api_key
+            client = openai.OpenAI(api_key=api_key)  # ✅ Use the new API client
 
             # Call the OpenAI GPT Model API
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model=model_used,
                 messages=[{"role": "user", "content": prompt}]
             )
-            response_text = response['choices'][0]['message']['content']
+            response_text = response.choices[0].message.content
             processing_time = round(time.time() - start_time, 2)
 
             # Save the response to the database
@@ -45,7 +47,7 @@ class ResponseListCreateView(generics.ListCreateAPIView):
             serializer = self.get_serializer(response_instance)
             return APIResponse(serializer.data, status=status.HTTP_201_CREATED)
 
-        except openai.error.AuthenticationError:
+        except openai.AuthenticationError:
             return APIResponse({"error": "Invalid OpenAI API key."}, status=status.HTTP_401_UNAUTHORIZED)
 
         except Exception as e:

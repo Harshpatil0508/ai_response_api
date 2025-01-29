@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import environ
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,6 +20,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
+CREDENTIAL_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
+# bynry_simple_jwt/
+APPS_DIR = BASE_DIR / "users"
+env = environ.Env()
+
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)
+
+if READ_DOT_ENV_FILE:
+    # OS environment variables take precedence over variables from ..env
+    print("Reading .env file")
+    print(BASE_DIR)
+    env.read_env(str(BASE_DIR / ".env"))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-xz*^-tmjc-1qtdny8(90nathmt0xa$x&0&z@d@ncp^z15e$wwo'
@@ -123,3 +139,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+OPENAI_API_KEY = env.str("OPENAI_API_KEY", default=None)
